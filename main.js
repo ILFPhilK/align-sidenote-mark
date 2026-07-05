@@ -1,7 +1,8 @@
-const { Plugin } = require("obsidian");
+const { Plugin, Platform } = require("obsidian");
 
 module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
   onload() {
+    if (Platform.isMobile) return;
     this.queueAlign = this.debounce(() => {
       if (this.raf) cancelAnimationFrame(this.raf);
       this.raf = requestAnimationFrame(() => this.alignAll());

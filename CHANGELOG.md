@@ -2,6 +2,11 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.4.0 - Disable on mobile
+
+- Marks the plugin as desktop-only in `manifest.json`.
+- Adds a runtime `Platform.isMobile` guard.
+
 ## v0.3.0 - Align marked paragraph group
 
 - Detects consecutive marked paragraphs below a callout.
