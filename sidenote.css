@@ -1,0 +1,76 @@
+/* =========================
+     缩进模式
+========================= */
+
+.indent .markdown-preview-section > .el-p > p {
+  text-indent: 2em;
+}
+
+/* =========================
+   只在桌面/平板宽屏生效（≥768px）
+========================= */
+
+@media (min-width: 768px) {
+
+  /* =========================
+     .indent 右侧边注 Callout
+  ========================= */
+
+  body {
+    --indent-sidenote-width: 280px;
+    --indent-sidenote-gap: 24px;
+  }
+
+  /* 只影响阅读模式中的 .indent 页面/区域 */
+  .markdown-preview-view.indent,
+  .markdown-preview-view .indent {
+    padding-right: calc(var(--indent-sidenote-width) + var(--indent-sidenote-gap));
+  }
+
+  /* 右侧边注：只在 .indent 中生效 */
+  .markdown-preview-view.indent .callout[data-callout-metadata~="right"],
+  .markdown-preview-view .indent .callout[data-callout-metadata~="right"] {
+    float: right;
+
+    width: var(--indent-sidenote-width);
+    max-width: var(--indent-sidenote-width);
+
+    margin-right: calc(-1 * (var(--indent-sidenote-width) + var(--indent-sidenote-gap)));
+    margin-left: var(--indent-sidenote-gap);
+    margin-top: 0.15em;
+    margin-bottom: 0.8em;
+
+    padding: 12px 18px;
+
+    font-size: 16px;
+    text-align: justify;
+    line-height: 1.35;
+    text-indent: 0;
+  }
+
+  /* 边注标题 */
+  .markdown-preview-view.indent .callout-title,
+  .markdown-preview-view .indent .callout-title {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+}
+
+/* 隐藏右侧批注导航栏的滚动条，但保留滚动功能 */
+.sidenote-callout-nav .sidenote-callout-nav-items {
+  overflow-y: auto !important;
+
+  /* Firefox */
+  scrollbar-width: none;
+
+  /* 旧版 Edge / IE */
+  -ms-overflow-style: none;
+}
+
+/* Chrome / Electron / Obsidian */
+.sidenote-callout-nav .sidenote-callout-nav-items::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+}
