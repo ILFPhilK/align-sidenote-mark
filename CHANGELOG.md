@@ -2,6 +2,11 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.8.0 - Quiet centering and highlight syntax
+
+- Removes repeated "could not precisely center" notices.
+- Adds support for Obsidian `==highlight==` syntax in addition to `<mark>`.
+
 ## v0.7.0 - Collapsed icon and centered jumps
 
 - Collapsed navigation shows only the top icon.

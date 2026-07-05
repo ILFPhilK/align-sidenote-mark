@@ -1,6 +1,6 @@
 # Align Sidenote With Mark
 
-Version 0.7.0
+Version 0.8.0
 
 This local Obsidian plugin is desktop-only.
 
@@ -31,3 +31,10 @@ body {
   --sidenote-nav-width: 230px;
 }
 ```
+
+
+## Version 0.8.0
+
+- Removes the repeated “无法精确居中” notice.
+- Improves centering fallback when Obsidian has not rendered the exact target callout yet.
+- Supports source highlights written as both `<mark>...</mark>` and Obsidian `==highlight==`.

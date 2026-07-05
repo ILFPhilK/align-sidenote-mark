@@ -1,4 +1,4 @@
-const { Plugin, Platform, MarkdownView, Notice } = require("obsidian");
+const { Plugin, Platform, MarkdownView } = require("obsidian");
 
 module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
   onload() {
@@ -442,7 +442,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
         continue;
       }
 
-      const hasMark = /<mark\b[^>]*>/i.test(line);
+      const hasMark = /<mark\b[^>]*>/i.test(line) || /(^|[^=])==[^=].*?==([^=]|$)/.test(line);
 
       if (hasMark) {
         if (!groupStarted) {
@@ -787,16 +787,12 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     if (!sourceTarget) return;
 
     await this.jumpToSourceLine(sourceTarget);
-
-    const centered = await this.waitAndCenterTarget(id, sourceTarget);
-    if (!centered) {
-      new Notice("边注导航：已跳转，但无法精确居中。", 2200);
-    }
+    await this.waitAndCenterTarget(id, sourceTarget);
   }
 
   async waitAndCenterTarget(id, sourceTarget) {
-    for (let i = 0; i < 14; i += 1) {
-      await this.sleep(i < 3 ? 120 : 180);
+    for (let i = 0; i < 18; i += 1) {
+      await this.sleep(i < 4 ? 100 : 160);
       await this.refreshAll();
 
       const visibleTarget = this.visibleTargetMap.get(id);
@@ -805,16 +801,54 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
         return true;
       }
 
-      const lineEl = this.findRenderedLineElement(sourceTarget.targetLine);
-      if (lineEl) {
-        this.centerElement(lineEl);
-        lineEl.classList.add("sidenote-nav-flash");
-        window.setTimeout(() => lineEl.classList.remove("sidenote-nav-flash"), 1200);
-        return true;
-      }
+      const centered = this.centerBestVisibleCandidate(sourceTarget);
+      if (centered) return true;
     }
 
+    // 不再弹出“无法精确居中”的提示。Obsidian 偶尔不会暴露可定位的 data-line，
+    // 此时 openFile 的行号跳转本身仍然已经执行。
     return false;
+  }
+
+  centerBestVisibleCandidate(sourceTarget) {
+    const line = Number.isFinite(sourceTarget.targetLine) ? sourceTarget.targetLine : sourceTarget.calloutLine;
+
+    const lineEl = this.findRenderedLineElement(line);
+    if (lineEl) {
+      this.centerElement(lineEl);
+      this.flashElement(lineEl);
+      return true;
+    }
+
+    const root = this.getActiveIndentRoot();
+    if (!root) return false;
+
+    const candidates = [
+      ...root.querySelectorAll("mark"),
+      ...root.querySelectorAll('.callout[data-callout-metadata~="right"]')
+    ].filter((el) => el instanceof HTMLElement && el.isConnected);
+
+    if (!candidates.length) return false;
+
+    const viewportCenter = window.innerHeight / 2;
+    const nearest = candidates
+      .map((el) => {
+        const rect = el.getBoundingClientRect();
+        return { el, distance: Math.abs((rect.top + rect.height / 2) - viewportCenter) };
+      })
+      .sort((a, b) => a.distance - b.distance)[0]?.el;
+
+    if (!nearest) return false;
+
+    this.centerElement(nearest);
+    this.flashElement(nearest);
+    return true;
+  }
+
+  flashElement(element) {
+    if (!element) return;
+    element.classList.add("sidenote-nav-flash");
+    window.setTimeout(() => element.classList.remove("sidenote-nav-flash"), 1200);
   }
 
   sleep(ms) {
@@ -826,10 +860,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     this.centerElement(destination);
 
     const flashEl = target.callout || destination;
-    flashEl.classList.add("sidenote-nav-flash");
-    window.setTimeout(() => {
-      flashEl.classList.remove("sidenote-nav-flash");
-    }, 1200);
+    this.flashElement(flashEl);
   }
 
   centerElement(element) {
@@ -860,12 +891,20 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
   }
 
   findScrollableAncestor(element) {
+    const preferred = element.closest(
+      ".view-content, .markdown-reading-view, .markdown-preview-view, .markdown-source-view.mod-cm6 .cm-scroller"
+    );
+
+    if (preferred && preferred.scrollHeight > preferred.clientHeight + 2) {
+      return preferred;
+    }
+
     let current = element.parentElement;
 
     while (current && current !== document.body) {
       const style = window.getComputedStyle(current);
       const overflowY = style.overflowY;
-      const canScroll = /(auto|scroll|overlay)/.test(overflowY) && current.scrollHeight > current.clientHeight + 2;
+      const canScroll = /(auto|scroll|overlay|hidden)/.test(overflowY) && current.scrollHeight > current.clientHeight + 2;
       if (canScroll) return current;
       current = current.parentElement;
     }
@@ -893,7 +932,6 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
 
     const nearest = lineEls
       .map((item) => ({ ...item, distance: Math.abs(item.line - line) }))
-      .filter((item) => item.distance <= 8)
       .sort((a, b) => a.distance - b.distance)[0];
 
     return nearest?.el || null;
@@ -916,7 +954,6 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
       }
     } catch (error) {
       console.error("Align Sidenote With Mark: openFile line jump failed", error);
-      new Notice("边注导航：跳转失败，请尝试切换到阅读模式后再点一次。", 3000);
     }
   }
 
