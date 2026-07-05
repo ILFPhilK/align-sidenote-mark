@@ -1,13 +1,14 @@
 # Align Sidenote With Mark
 
-Version 0.4.0
+Version 0.5.0
 
 A local Obsidian plugin for aligning right-side callouts with marked text in Reading View.
 
 ## Features
 
-- Marks the plugin as desktop-only in `manifest.json`.
-- Adds a runtime `Platform.isMobile` guard.
+- Adds a right-side sidenote navigation rail.
+- Lists visible/rendered `right` callouts and jumps to their marked text.
+- Adds a pin button for keeping the navigation rail expanded.
 
 ## Expected Markdown
 

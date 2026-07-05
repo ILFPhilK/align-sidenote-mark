@@ -2,6 +2,12 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.5.0 - Add DOM based navigation rail
+
+- Adds a right-side sidenote navigation rail.
+- Lists visible/rendered `right` callouts and jumps to their marked text.
+- Adds a pin button for keeping the navigation rail expanded.
+
 ## v0.4.0 - Disable on mobile
 
 - Marks the plugin as desktop-only in `manifest.json`.
