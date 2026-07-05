@@ -2,6 +2,12 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.6.0 - Parse full document navigation
+
+- Builds navigation from the current Markdown source instead of only rendered DOM.
+- Navigation can list all `right` callouts in the current document.
+- Clicking an item jumps by source line when possible.
+
 ## v0.5.0 - Add DOM based navigation rail
 
 - Adds a right-side sidenote navigation rail.
