@@ -1,13 +1,13 @@
 # Align Sidenote With Mark
 
-Version 0.2.0
+Version 0.3.0
 
 A local Obsidian plugin for aligning right-side callouts with marked text in Reading View.
 
 ## Features
 
-- Changes top alignment to vertical center alignment.
-- Uses incremental transform updates with a small threshold to avoid visual shaking.
+- Detects consecutive marked paragraphs below a callout.
+- Aligns the callout center to the whole marked group center.
 
 ## Expected Markdown
 
