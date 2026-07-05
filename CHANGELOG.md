@@ -2,6 +2,11 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.7.0 - Collapsed icon and centered jumps
+
+- Collapsed navigation shows only the top icon.
+- Clicking an item attempts to place the target near the vertical center of the reading area.
+
 ## v0.6.0 - Parse full document navigation
 
 - Builds navigation from the current Markdown source instead of only rendered DOM.

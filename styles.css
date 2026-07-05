@@ -1,4 +1,12 @@
 /*
-  Align Sidenote With Mark plugin styles.
-  The plugin injects required styles automatically.
+  Optional customization for Align Sidenote With Mark.
+  The plugin injects its required styles automatically.
+
+  You can override these variables in your own CSS snippet:
+
+  body {
+    --sidenote-nav-top: 92px;
+    --sidenote-nav-right: 12px;
+    --sidenote-nav-width: 230px;
+  }
 */

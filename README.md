@@ -1,14 +1,17 @@
 # Align Sidenote With Mark
 
-Version 0.6.0
+Version 0.7.0
 
-A local Obsidian plugin for aligning right-side callouts with marked text in Reading View.
+This local Obsidian plugin is desktop-only.
 
 ## Features
 
-- Builds navigation from the current Markdown source instead of only rendered DOM.
-- Navigation can list all `right` callouts in the current document.
-- Clicking an item jumps by source line when possible.
+- Aligns right-side callouts with the vertical center of the marked text below them.
+- If several consecutive paragraphs contain `<mark>`, the callout aligns with the center of the whole marked group.
+- Adds a right-side navigation rail for all `right` callouts in the current Markdown file.
+- Collapsed navigation now shows only the top icon, not item numbers.
+- Clicking a navigation item tries to center the matching `<mark>` / target line vertically in the reading pane.
+- Mobile is disabled both by `isDesktopOnly: true` and by a runtime platform check.
 
 ## Expected Markdown
 
@@ -28,4 +31,3 @@ body {
   --sidenote-nav-width: 230px;
 }
 ```
-
