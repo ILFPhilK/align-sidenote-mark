@@ -16,6 +16,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     this.idSeed = 0;
     this.refreshToken = 0;
     this.activeFilePath = null;
+    this.lastClickedTargetId = null;
 
     this.queueRefresh = this.debounce(() => {
       if (this.raf) cancelAnimationFrame(this.raf);
@@ -304,6 +305,10 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
       return;
     }
 
+    if (this.activeFilePath !== view.file.path) {
+      this.lastClickedTargetId = null;
+    }
+
     this.activeFilePath = view.file.path;
 
     try {
@@ -396,13 +401,15 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
   }
 
   getMarkdownCalloutTitle(headerTitle, bodyLines, number) {
-    if (headerTitle) return this.normalizeLabel(this.stripMarkdown(headerTitle), 60);
-
+    // 导航条目优先显示 callout 正文，而不是 callout 标题。
+    // 例如 > [!note|right] 批注 的标题是“批注”，但导航里更有用的是下面的批注内容。
     const firstBodyLine = bodyLines
       .map((line) => this.stripMarkdown(line).trim())
       .find(Boolean);
 
-    if (firstBodyLine) return this.normalizeLabel(firstBodyLine, 60);
+    if (firstBodyLine) return this.normalizeLabel(firstBodyLine, 80);
+
+    if (headerTitle) return this.normalizeLabel(this.stripMarkdown(headerTitle), 80);
     return `边注 ${number}`;
   }
 
@@ -696,6 +703,11 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
   buildNav() {
     const navTargets = this.sourceTargets.length ? this.sourceTargets : this.visibleTargets;
 
+    const targetIds = new Set(navTargets.map((target) => target.id));
+    if (this.lastClickedTargetId && !targetIds.has(this.lastClickedTargetId)) {
+      this.lastClickedTargetId = null;
+    }
+
     if (!navTargets.length) {
       this.removeNav();
       return;
@@ -844,6 +856,9 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
   }
 
   async jumpToTarget(id) {
+    this.lastClickedTargetId = id;
+    this.updateActiveNavItem();
+
     const visibleTarget = this.visibleTargetMap.get(id);
     if (visibleTarget) {
       this.scrollToVisibleTarget(visibleTarget);
@@ -1027,25 +1042,8 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
   updateActiveNavItem() {
     if (!this.navEl) return;
 
-    const visibleTargets = [...this.visibleTargetMap.values()].filter((target) => target.targetEl?.isConnected);
-    if (!visibleTargets.length) return;
-
-    const viewportCenter = window.innerHeight / 2;
-    let best = null;
-    let bestDistance = Infinity;
-
-    visibleTargets.forEach((target) => {
-      const rect = target.targetEl.getBoundingClientRect();
-      const center = rect.top + rect.height / 2;
-      const distance = Math.abs(center - viewportCenter);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        best = target;
-      }
-    });
-
     this.navEl.querySelectorAll(".sidenote-callout-nav-item").forEach((item) => {
-      item.classList.toggle("is-active", best && item.dataset.targetId === best.id);
+      item.classList.toggle("is-active", Boolean(this.lastClickedTargetId) && item.dataset.targetId === this.lastClickedTargetId);
     });
   }
 };

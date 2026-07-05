@@ -1,6 +1,6 @@
 # Align Sidenote With Mark
 
-Version 0.9.0
+Version 0.10.0
 
 This local Obsidian plugin is desktop-only.
 

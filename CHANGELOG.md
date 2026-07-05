@@ -2,6 +2,11 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.10.0 - Last clicked active item and content labels
+
+- Keeps the last clicked navigation item highlighted.
+- Navigation labels display callout content instead of the generic callout title.
+
 ## v0.9.0 - Avoid right sidebar and limit list height
 
 - Navigation rail moves left when Obsidian right sidebar/right split is open.
