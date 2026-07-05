@@ -2,6 +2,11 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.11.0 - Left align navigation labels
+
+- Navigation item text is left-aligned after the number badge.
+- Long labels continue to truncate with ellipsis.
+
 ## v0.10.0 - Last clicked active item and content labels
 
 - Keeps the last clicked navigation item highlighted.

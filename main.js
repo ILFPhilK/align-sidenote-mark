@@ -227,6 +227,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
         color: var(--text-muted);
         display: flex;
         align-items: center;
+        justify-content: flex-start;
         gap: 8px;
         padding: 7px 8px;
         border-radius: 10px;
@@ -266,10 +267,12 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
       }
 
       .sidenote-callout-nav-label {
+        flex: 1 1 auto;
         min-width: 0;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+        text-align: left;
         opacity: 0;
         transition: opacity 0.18s ease;
       }

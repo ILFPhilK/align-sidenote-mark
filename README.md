@@ -1,6 +1,6 @@
 # Align Sidenote With Mark
 
-Version 0.10.0
+Version 0.11.0
 
 This local Obsidian plugin is desktop-only.
 
@@ -14,6 +14,7 @@ This local Obsidian plugin is desktop-only.
 - When expanded, the navigation list shows up to 20 items at once and scrolls for more.
 - Clicking a navigation item jumps to the matching marked text line and tries to center it in the reading area.
 - Mobile is disabled both by `isDesktopOnly: true` and by a runtime platform check.
+- Navigation item text is left-aligned after the number badge.
 
 ## Expected Markdown
 
