@@ -21,48 +21,45 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     this.queueAlign();
   }
 
-  onunload() {
-    document.querySelectorAll(".callout.sidenote-mark-aligned").forEach((callout) => {
-      callout.style.transform = "";
-      callout.classList.remove("sidenote-mark-aligned");
-    });
-  }
+  onunload() { this.clearTransforms(); }
 
   debounce(fn, delay) {
     let timer = null;
-    return () => {
-      clearTimeout(timer);
-      timer = setTimeout(fn, delay);
-    };
+    return () => { clearTimeout(timer); timer = setTimeout(fn, delay); };
+  }
+
+  clearTransforms() {
+    document.querySelectorAll(".callout.sidenote-mark-aligned").forEach((callout) => {
+      callout.style.transform = "";
+      callout.classList.remove("sidenote-mark-aligned");
+      delete callout.dataset.sidenoteTranslateY;
+    });
   }
 
   alignAll() {
-    const roots = new Set([
-      ...document.querySelectorAll(".markdown-preview-view.indent"),
-      ...document.querySelectorAll(".markdown-preview-view .indent")
-    ]);
-
+    const roots = new Set([...document.querySelectorAll(".markdown-preview-view.indent, .markdown-preview-view .indent")]);
     roots.forEach((root) => this.alignRoot(root));
   }
 
   alignRoot(root) {
     const callouts = [...root.querySelectorAll('.callout[data-callout-metadata~="right"]')];
-
-    callouts.forEach((callout) => {
-      callout.style.transform = "";
-      callout.classList.remove("sidenote-mark-aligned");
-    });
-
     callouts.forEach((callout) => {
       const mark = this.findMarkInNextParagraph(callout);
       if (!mark) return;
 
       const calloutRect = callout.getBoundingClientRect();
       const markRect = mark.getBoundingClientRect();
-      const deltaY = Math.round(markRect.top - calloutRect.top);
+      const calloutCenter = calloutRect.top + calloutRect.height / 2;
+      const markCenter = markRect.top + markRect.height / 2;
+      const deltaY = markCenter - calloutCenter;
+      const oldY = Number.parseFloat(callout.dataset.sidenoteTranslateY || "0") || 0;
+      const newY = oldY + deltaY;
 
-      callout.style.transform = `translateY(${deltaY}px)`;
-      callout.classList.add("sidenote-mark-aligned");
+      if (Math.abs(deltaY) > 1) {
+        callout.dataset.sidenoteTranslateY = String(newY);
+        callout.style.transform = `translateY(${Math.round(newY)}px)`;
+        callout.classList.add("sidenote-mark-aligned");
+      }
     });
   }
 

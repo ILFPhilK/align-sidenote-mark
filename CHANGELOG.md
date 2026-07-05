@@ -2,6 +2,11 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.2.0 - Stabilize center alignment
+
+- Changes top alignment to vertical center alignment.
+- Uses incremental transform updates with a small threshold to avoid visual shaking.
+
 ## v0.1.0 - Initial align first mark
 
 - Initial local Obsidian plugin.
