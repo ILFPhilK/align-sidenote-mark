@@ -1,6 +1,6 @@
 # Align Sidenote With Mark
 
-Version 0.11.0
+Version 0.12.0
 
 This local Obsidian plugin is desktop-only.
 
@@ -15,6 +15,8 @@ This local Obsidian plugin is desktop-only.
 - Clicking a navigation item jumps to the matching marked text line and tries to center it in the reading area.
 - Mobile is disabled both by `isDesktopOnly: true` and by a runtime platform check.
 - Navigation item text is left-aligned after the number badge.
+- Navigation items no longer show Obsidian black hover tooltips.
+- Clicking any navigation item now prefers source-line jumping, preventing stale visible-callout mappings from blocking jumps back to earlier items.
 
 ## Expected Markdown
 

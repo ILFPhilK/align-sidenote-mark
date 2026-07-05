@@ -2,6 +2,12 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.12.0 - Remove tooltips and robust jumps
+
+- Removes Obsidian black hover tooltips from navigation items.
+- Clicking navigation items prefers source-line jumping to avoid stale visible-callout mappings.
+- Improves jumping back to earlier items such as item 1 after navigating elsewhere.
+
 ## v0.11.0 - Left align navigation labels
 
 - Navigation item text is left-aligned after the number badge.

@@ -588,7 +588,10 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
       if (nearby) return nearby.target;
     }
 
-    return this.sourceTargets.filter((target) => !usedSourceIds.has(target.id))[visibleIndex] || null;
+    // 没有 data-line 时，不再按“当前可见序号”强行匹配全文序号。
+    // Obsidian 长文档可能只渲染局部 DOM，当前第 1 个可见 callout 不等于全文第 1 个 callout。
+    // 旧逻辑会导致点击导航第 1 条时误滚到当前可见区域，无法跳回文档前部。
+    return null;
   }
 
   getSourceLineForElement(element) {
@@ -726,7 +729,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
       item.type = "button";
       item.className = "sidenote-callout-nav-item";
       item.dataset.targetId = target.id;
-      item.setAttribute("aria-label", `跳转到 ${target.title}`);
+      // 不设置 aria-label/title，避免 Obsidian 在悬停时显示黑色 tooltip。
 
       const number = document.createElement("span");
       number.className = "sidenote-callout-nav-number";
@@ -769,7 +772,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     pin.type = "button";
     pin.className = "sidenote-callout-nav-pin";
     pin.textContent = nav.classList.contains("is-pinned") ? "收起" : "固定";
-    pin.setAttribute("aria-label", "固定或收起边注导航");
+    // 不设置 aria-label/title，避免显示黑色 tooltip。
     pin.addEventListener("click", (event) => {
       event.stopPropagation();
       nav.classList.toggle("is-pinned");
@@ -862,17 +865,27 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     this.lastClickedTargetId = id;
     this.updateActiveNavItem();
 
-    const visibleTarget = this.visibleTargetMap.get(id);
-    if (visibleTarget) {
-      this.scrollToVisibleTarget(visibleTarget);
+    const sourceTarget = this.sourceTargetMap.get(id);
+    if (sourceTarget) {
+      // 导航列表来自全文 Markdown。点击导航项时优先按源文档行号跳转，
+      // 不优先使用 visibleTargetMap。这样可以避免长文档虚拟渲染时，
+      // 可见 callout 被错误映射到第 1 条等早期条目，导致跳不回去。
+      await this.jumpToSourceLine(sourceTarget);
+      await this.waitAndCenterTarget(id, sourceTarget);
       return;
     }
 
-    const sourceTarget = this.sourceTargetMap.get(id);
-    if (!sourceTarget) return;
+    const visibleTarget = this.visibleTargetMap.get(id);
+    if (visibleTarget && this.isVisibleTargetConnected(visibleTarget)) {
+      this.scrollToVisibleTarget(visibleTarget);
+    }
+  }
 
-    await this.jumpToSourceLine(sourceTarget);
-    await this.waitAndCenterTarget(id, sourceTarget);
+  isVisibleTargetConnected(target) {
+    return Boolean(
+      (target?.targetEl && target.targetEl.isConnected) ||
+      (target?.callout && target.callout.isConnected)
+    );
   }
 
   async waitAndCenterTarget(id, sourceTarget) {
@@ -1037,9 +1050,34 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
           eState: { line }
         });
       }
+
+      // 如果当前模式暴露了编辑器接口，额外执行一次行号滚动。
+      // 在某些 Obsidian 状态下，同一文件内反复 openFile 不一定重新滚动到旧位置；
+      // 这个补充逻辑可以改善从后文跳回第 1 条批注时失效的问题。
+      await this.sleep(50);
+      this.scrollEditorToLineIfAvailable(line);
     } catch (error) {
       console.error("Align Sidenote With Mark: openFile line jump failed", error);
     }
+  }
+
+  scrollEditorToLineIfAvailable(line) {
+    const view = this.getActiveMarkdownView();
+    const editor = view?.editor;
+    if (!editor || !Number.isFinite(line)) return false;
+
+    try {
+      const pos = { line, ch: 0 };
+      if (typeof editor.setCursor === "function") editor.setCursor(pos);
+      if (typeof editor.scrollIntoView === "function") {
+        editor.scrollIntoView({ from: pos, to: pos }, true);
+        return true;
+      }
+    } catch (error) {
+      console.debug("Align Sidenote With Mark: editor line scroll skipped", error);
+    }
+
+    return false;
   }
 
   updateActiveNavItem() {
