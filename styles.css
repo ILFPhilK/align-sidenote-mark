@@ -8,5 +8,6 @@
     --sidenote-nav-top: 92px;
     --sidenote-nav-right: 12px;
     --sidenote-nav-width: 230px;
+    --sidenote-nav-items-max-height: 772px; /* 约等于 20 条 */
   }
 */

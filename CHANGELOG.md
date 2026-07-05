@@ -2,6 +2,11 @@
 
 All notable changes to this local Obsidian plugin are documented here.
 
+## v0.9.0 - Avoid right sidebar and limit list height
+
+- Navigation rail moves left when Obsidian right sidebar/right split is open.
+- Expanded navigation shows about 20 items and scrolls for more.
+
 ## v0.8.0 - Quiet centering and highlight syntax
 
 - Removes repeated "could not precisely center" notices.

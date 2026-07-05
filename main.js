@@ -52,6 +52,9 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     this.register(() => this.observer.disconnect());
 
     window.addEventListener("resize", this.queueRefresh, { passive: true });
+
+    this.navOffsetTimer = window.setInterval(() => this.updateNavPosition(), 700);
+    this.register(() => window.clearInterval(this.navOffsetTimer));
     window.addEventListener("scroll", this.queueActiveUpdate, { passive: true, capture: true });
 
     this.register(() => window.removeEventListener("resize", this.queueRefresh));
@@ -110,7 +113,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
       .sidenote-callout-nav {
         position: fixed;
         top: var(--sidenote-nav-top, 92px);
-        right: var(--sidenote-nav-right, 12px);
+        right: var(--sidenote-nav-computed-right, var(--sidenote-nav-right, 12px));
         z-index: var(--layer-popover, 1000);
         width: 46px;
         max-height: calc(100vh - var(--sidenote-nav-top, 92px) - 24px);
@@ -121,7 +124,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
         background: var(--background-primary);
         box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
         opacity: 0.72;
-        transition: width 0.18s ease, opacity 0.18s ease, max-height 0.18s ease;
+        transition: width 0.18s ease, opacity 0.18s ease, max-height 0.18s ease, right 0.18s ease;
         user-select: none;
       }
 
@@ -203,7 +206,10 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
       }
 
       .sidenote-callout-nav-items {
-        max-height: calc(100vh - var(--sidenote-nav-top, 92px) - 72px);
+        max-height: min(
+          calc(100vh - var(--sidenote-nav-top, 92px) - 72px),
+          var(--sidenote-nav-items-max-height, 772px)
+        );
         overflow-y: auto;
         padding: 6px;
         box-sizing: border-box;
@@ -283,6 +289,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
 
     this.alignAll();
     this.buildNav();
+    this.updateNavPosition();
     this.updateActiveNavItem();
   }
 
@@ -695,6 +702,7 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
     }
 
     const nav = this.ensureNav();
+    this.updateNavPosition();
     const itemsEl = nav.querySelector(".sidenote-callout-nav-items");
     itemsEl.replaceChildren();
 
@@ -767,6 +775,65 @@ module.exports = class AlignSidenoteWithMarkPlugin extends Plugin {
 
     this.navEl = nav;
     return nav;
+  }
+
+
+
+  updateNavPosition() {
+    if (!this.navEl) return;
+
+    const baseRight = this.getCssPixelVariable("--sidenote-nav-right", 12);
+    const sidebarWidth = this.getRightSidebarWidth();
+    const safeRight = Math.max(baseRight, Math.round(sidebarWidth + baseRight));
+    this.navEl.style.setProperty("--sidenote-nav-computed-right", `${safeRight}px`);
+  }
+
+  getCssPixelVariable(name, fallback) {
+    const raw = window.getComputedStyle(document.body).getPropertyValue(name).trim();
+    if (!raw) return fallback;
+
+    if (raw.endsWith("px")) {
+      const value = Number.parseFloat(raw);
+      return Number.isFinite(value) ? value : fallback;
+    }
+
+    const numeric = Number.parseFloat(raw);
+    if (Number.isFinite(numeric)) return numeric;
+    return fallback;
+  }
+
+  getRightSidebarWidth() {
+    const selectors = [
+      ".workspace-split.mod-right-split",
+      ".workspace-sidedock.mod-right",
+      ".mod-right-split"
+    ];
+
+    const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+    let maxWidth = 0;
+
+    selectors.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((el) => {
+        if (!(el instanceof HTMLElement)) return;
+
+        const style = window.getComputedStyle(el);
+        if (style.display === "none" || style.visibility === "hidden" || Number.parseFloat(style.opacity || "1") === 0) {
+          return;
+        }
+
+        const rect = el.getBoundingClientRect();
+        if (rect.width < 40 || rect.height < 40) return;
+
+        // 只把贴近窗口右侧的面板视为“右边栏”。这样不会误判正文中的普通分栏。
+        const touchesRightEdge = rect.right >= viewportWidth - 8;
+        const nearRightEdge = rect.left >= viewportWidth * 0.55 && rect.right >= viewportWidth - 80;
+        if (!touchesRightEdge && !nearRightEdge) return;
+
+        maxWidth = Math.max(maxWidth, rect.width + Math.max(0, viewportWidth - rect.right));
+      });
+    });
+
+    return maxWidth;
   }
 
   removeNav() {

@@ -1,9 +1,9 @@
 {
   "id": "align-sidenote-mark",
   "name": "Align Sidenote With Mark",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "minAppVersion": "1.5.0",
-  "description": "Align right-side callouts with marked text and show a desktop-only navigation rail for all right callouts in the current document.",
+  "description": "Align right-side callouts with marked text and show a desktop-only navigation rail that avoids the right sidebar.",
   "author": "local",
   "isDesktopOnly": true
 }
